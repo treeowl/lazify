@@ -6,14 +6,18 @@ cabal-version:       2.0
 name:                lazify-records
 version:             0.1.0.0
 synopsis:            A simple utility for lazy record matching
--- description:
+description:
+    .
+    Since early Haskell history, it's been convenient to make values
+    stricter using `seq`. Making them lazier has always been a bit
+    of a chore. This package offers tools for doing so.
 homepage:            https://github.com/treeowl/lazify-records
--- bug-reports:
+bug-reports:         https://github.com/treeowl/lazify-records/issues
 license:             BSD3
 license-file:        LICENSE
 author:              David Feuer
 maintainer:          David.Feuer@gmail.com
--- copyright:
+copyright:           2019 David Feuer
 category:            Data
 build-type:          Simple
 extra-source-files:  CHANGELOG.md
