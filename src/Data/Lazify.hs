@@ -1,9 +1,12 @@
+{-# language CPP #-}
 {-# language DataKinds #-}
 {-# language DefaultSignatures #-}
 {-# language FlexibleContexts #-}
 {-# language FlexibleInstances #-}
+{-# language GADTs #-}
 {-# language PolyKinds #-}
 {-# language ScopedTypeVariables #-}
+{-# language TypeInType #-}
 {-# language TypeOperators #-}
 {-# language UndecidableInstances #-}
 
@@ -14,13 +17,22 @@ module Data.Lazify (
     Lazifiable (..)
   , GLazifiable
   , genericLazify
+  , ($~)
   ) where
 import GHC.Generics
 import Data.Functor.Product
 import Data.Proxy
 import Data.Functor.Identity (Identity)
 import Data.Functor.Compose (Compose)
+import Data.Coerce (Coercible)
+import Data.Type.Coercion (Coercion(..))
 import Control.Applicative (Const)
+import GHC.Exts (TYPE)
+import Data.Type.Equality ((:~:)(..))
+#if MIN_VERSION_base(4,10,0)
+import Data.Type.Equality ((:~~:)(..), type (~~))
+import Type.Reflection (Typeable, TypeRep, typeRep)
+#endif
 
 -- | A class for types that can be lazified. A generic
 -- default is provided for convenience. To lazify a type using
@@ -43,6 +55,7 @@ class Lazifiable a where
   default lazify :: (Generic a, GLazifiable (Rep a)) => a -> a
   lazify x = genericLazify x
 
+-- | A 'Generic' representation that can be lazified.
 class GLazifiable f where
   glazify :: f a -> f a
 
@@ -52,6 +65,10 @@ class GLazifiable f where
 -- by lazifying its *underlying* type using its 'Lazifiable' instance.
 genericLazify :: (Generic a, GLazifiable (Rep a)) => a -> a
 genericLazify = to . glazify . from
+
+-- | Apply a function to a lazified value.
+($~) :: forall rep a (b :: TYPE rep). Lazifiable a => (a -> b) -> a -> b
+f $~ a = f (lazify a)
 
 -- Non-newtype cases
 instance GLazifiable f => GLazifiable (D1 ('MetaData x y z 'False) f) where
@@ -74,6 +91,8 @@ instance GLazifiable U1 where
 instance (GLazifiable f, GLazifiable g) => GLazifiable (f :*: g) where
   glazify ~(x :*: y) = glazify x :*: glazify y
 
+-- | A 'Generic' representation that should be lazified @newtype@-style.
+-- That is, its /contents/ should be lazified.
 class GIsNewtype f where
   glazifyNewtype :: f a -> f a
 
@@ -98,6 +117,25 @@ instance Lazifiable (Product f g a)
 instance Lazifiable a => Lazifiable (Identity a)
 instance Lazifiable a => Lazifiable (Const a b)
 instance Lazifiable (f (g a)) => Lazifiable (Compose f g a)
+
+-- Singletons are generally lazifiable under sufficiently boring
+-- conditions. These could, at least theoretically, help guide type
+-- inference in some cases, if it's more convenient to explain
+-- how one *could* get the singleton than to pin down its type
+-- by hand.
+instance a ~ b => Lazifiable (a :~: b) where
+  lazify _ = Refl
+
+instance Coercible a b => Lazifiable (Coercion a b) where
+  lazify _ = Coercion
+
+#if MIN_VERSION_base(4,10,0)
+instance a ~~ b => Lazifiable (a :~~: b) where
+  lazify _ = HRefl
+
+instance Typeable a => Lazifiable (TypeRep a) where
+  lazify _ = typeRep
+#endif
 
 -- Tuple instances
 instance Lazifiable ()
