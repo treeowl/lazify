@@ -116,12 +116,12 @@ script:
   - cd ${DISTDIR} || false
   - find . -maxdepth 1 -type f -name '*.tar.gz' -exec tar -xvf '{}' \;
   - find . -maxdepth 1 -type f -name '*.tar.gz' -exec rm       '{}' \;
-  - PKGDIR_lazify_records="$(find . -maxdepth 1 -type d -regex '.*/lazify-[0-9.]*')"
+  - PKGDIR_lazify="$(find . -maxdepth 1 -type d -regex '.*/lazify-[0-9.]*')"
   # Generate cabal.project
   - rm -rf cabal.project cabal.project.local cabal.project.freeze
   - touch cabal.project
   - |
-    echo "packages: ${PKGDIR_lazify_records}" >> cabal.project
+    echo "packages: ${PKGDIR_lazify}" >> cabal.project
   - |
   - "for pkg in $($HCPKG list --simple-output); do echo $pkg | sed 's/-[^-]*$//' | (grep -vE -- '^(lazify)$' || true) | sed 's/^/constraints: /' | sed 's/$/ installed/' >> cabal.project.local; done"
   - cat cabal.project || true
@@ -133,7 +133,7 @@ script:
   # build & run tests, build benchmarks
   - ${CABAL} v2-build $WITHCOMPILER ${TEST} ${BENCH} all | color_cabal_output
   # cabal check...
-  - (cd ${PKGDIR_lazify_records} && ${CABAL} -vnormal check)
+  - (cd ${PKGDIR_lazify} && ${CABAL} -vnormal check)
   # haddock...
   - ${CABAL} v2-haddock $WITHCOMPILER ${TEST} ${BENCH} all | color_cabal_output
   # Building without installed constraints for packages in global-db...
