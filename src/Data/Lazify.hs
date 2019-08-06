@@ -29,6 +29,8 @@ import Data.Type.Coercion (Coercion(..))
 import Control.Applicative (Const)
 import GHC.Exts (TYPE)
 import Data.Type.Equality ((:~:)(..))
+import qualified Data.Monoid as M
+import qualified Data.Semigroup as S
 #if MIN_VERSION_base(4,10,0)
 import Data.Type.Equality ((:~~:)(..), type (~~))
 import Type.Reflection (Typeable, TypeRep, typeRep)
@@ -117,6 +119,19 @@ instance Lazifiable (Product f g a)
 instance Lazifiable a => Lazifiable (Identity a)
 instance Lazifiable a => Lazifiable (Const a b)
 instance Lazifiable (f (g a)) => Lazifiable (Compose f g a)
+
+instance Lazifiable a => Lazifiable (S.First a)
+instance Lazifiable a => Lazifiable (S.Last a)
+instance Lazifiable a => Lazifiable (S.Min a)
+instance Lazifiable a => Lazifiable (S.Max a)
+instance Lazifiable (S.Arg a b)
+
+instance Lazifiable a => Lazifiable (M.Sum a)
+instance Lazifiable a => Lazifiable (M.Product a)
+instance Lazifiable (f a) => Lazifiable (M.Alt f a)
+#if MIN_VERSION_base(4,12,0)
+instance Lazifiable (f a) => Lazifiable (M.Ap f a)
+#endif
 
 -- Singletons are generally lazifiable under sufficiently boring
 -- conditions. These could, at least theoretically, help guide type

@@ -24,9 +24,9 @@ build-type:          Simple
 extra-source-files:  CHANGELOG.md
 
 library
-  ghc-options: -O2
   exposed-modules:
     Data.Lazify
+    Data.Lazify.Generic
   -- other-modules:
   -- other-extensions:
   build-depends:
@@ -35,4 +35,22 @@ library
     -- this limitation.
     base >=4.9.0 && <4.13.0
   hs-source-dirs:      src
+  default-language:    Haskell2010
+
+test-suite lazify-properties
+  hs-source-dirs:   tests
+  main-is:          lazify-properties.hs
+  type:             exitcode-stdio-1.0
+  build-depends:
+      base >=4.9.0 && <4.13.0
+    , lazify
+  default-language:    Haskell2010
+
+test-suite lazifyg-properties
+  hs-source-dirs:   tests
+  main-is:          lazifyg-properties.hs
+  type:             exitcode-stdio-1.0
+  build-depends:
+      base >=4.9.0 && <4.13.0
+    , lazify
   default-language:    Haskell2010
