@@ -5,8 +5,7 @@
 -- functions in this module expect the underlying type of a @newtype@
 -- to be 'GHC.Generics.Generic' as well.
 module Data.Lazify.Generic (
-    LazifiableG
-  , lazifyGeneric
+    lazifyGeneric
   , ($~)
   ) where
 import Data.Lazify.Generic.Internal

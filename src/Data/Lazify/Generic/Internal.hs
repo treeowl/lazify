@@ -10,6 +10,8 @@
 {-# language TypeOperators #-}
 {-# language UndecidableInstances #-}
 
+{-# OPTIONS_HADDOCK not-home #-}
+
 -- | Record types in Haskell can be made lazy through lazy pattern
 -- matching. This module offers functions for making them lazy
 -- /generically/.
