@@ -26,7 +26,9 @@ extra-source-files:  CHANGELOG.md
 library
   exposed-modules:
     Data.Lazify
+    Data.Lazify.Internal
     Data.Lazify.Generic
+    Data.Lazify.Generic.Internal
   -- other-modules:
   -- other-extensions:
   build-depends:
