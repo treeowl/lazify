@@ -11,8 +11,8 @@
 -- matching. This module offers functions for making them lazy
 -- /generically/.
 module Data.Lazify (
-    IsRecord (..)
-  , GIsRecord
+    Lazifiable (..)
+  , GLazifiable
   , genericLazify
   ) where
 import GHC.Generics
@@ -25,7 +25,7 @@ import Control.Applicative (Const)
 -- | A class for types that can be lazified. A generic
 -- default is provided for convenience. To lazify a type using
 -- its generic representation, use 'genericLazify'.
-class IsRecord a where
+class Lazifiable a where
   -- | Lazily rewrap a record. Applying @lazify@ to a record and then
   -- pattern matching on it strictly is equivalent to pattern matching
   -- on it lazily.
@@ -40,38 +40,38 @@ class IsRecord a where
   -- lazyFirst f ~(a, b) = (f a, b)
   -- @
   lazify :: a -> a
-  default lazify :: (Generic a, GIsRecord (Rep a)) => a -> a
+  default lazify :: (Generic a, GLazifiable (Rep a)) => a -> a
   lazify x = genericLazify x
 
-class GIsRecord f where
+class GLazifiable f where
   glazify :: f a -> f a
 
 -- | Lazify a record using its generic representation.
 --
 -- Note that newtypes are treated specially: a newtype is lazified
--- by lazifying its *underlying* type using its 'IsRecord' instance.
-genericLazify :: (Generic a, GIsRecord (Rep a)) => a -> a
+-- by lazifying its *underlying* type using its 'Lazifiable' instance.
+genericLazify :: (Generic a, GLazifiable (Rep a)) => a -> a
 genericLazify = to . glazify . from
 
 -- Non-newtype cases
-instance GIsRecord f => GIsRecord (D1 ('MetaData x y z 'False) f) where
+instance GLazifiable f => GLazifiable (D1 ('MetaData x y z 'False) f) where
   glazify (M1 x) = M1 (glazify x)
-instance GIsRecord f => GIsRecord (C1 c f) where
+instance GLazifiable f => GLazifiable (C1 c f) where
   glazify (M1 x) = M1 (glazify x)
-instance GIsRecord f => GIsRecord (S1 c f) where
+instance GLazifiable f => GLazifiable (S1 c f) where
   glazify (M1 x) = M1 (glazify x)
 
 -- For a newtype, we need to lazify whatever it *wraps*
-instance GIsNewtype f => GIsRecord (D1 ('MetaData x y z 'True) f) where
+instance GIsNewtype f => GLazifiable (D1 ('MetaData x y z 'True) f) where
   glazify (M1 x) = M1 (glazifyNewtype x)
 
-instance GIsRecord (K1 i c) where
+instance GLazifiable (K1 i c) where
   glazify x = x
 
-instance GIsRecord U1 where
+instance GLazifiable U1 where
   glazify _ = U1
 
-instance (GIsRecord f, GIsRecord g) => GIsRecord (f :*: g) where
+instance (GLazifiable f, GLazifiable g) => GLazifiable (f :*: g) where
   glazify ~(x :*: y) = glazify x :*: glazify y
 
 class GIsNewtype f where
@@ -80,7 +80,7 @@ class GIsNewtype f where
 instance GIsNewtype f => GIsNewtype (M1 i c f) where
   glazifyNewtype (M1 x) = M1 (glazifyNewtype x)
 
-instance IsRecord a => GIsNewtype (K1 i a) where
+instance Lazifiable a => GIsNewtype (K1 i a) where
   glazifyNewtype (K1 a) = K1 (lazify a)
 
 
@@ -93,23 +93,23 @@ instance IsRecord a => GIsNewtype (K1 i a) where
 -- occur, leading to incompatible constraints.
 
 -- Miscellaneous instances
-instance IsRecord (Proxy a)
-instance IsRecord (Product f g a)
-instance IsRecord a => IsRecord (Identity a)
-instance IsRecord a => IsRecord (Const a b)
-instance IsRecord (f (g a)) => IsRecord (Compose f g a)
+instance Lazifiable (Proxy a)
+instance Lazifiable (Product f g a)
+instance Lazifiable a => Lazifiable (Identity a)
+instance Lazifiable a => Lazifiable (Const a b)
+instance Lazifiable (f (g a)) => Lazifiable (Compose f g a)
 
 -- Tuple instances
-instance IsRecord ()
-instance IsRecord (a,b)
-instance IsRecord (a,b,c)
-instance IsRecord (a,b,c,d)
-instance IsRecord (a,b,c,d,e)
-instance IsRecord (a,b,c,d,e,f)
-instance IsRecord (a,b,c,d,e,f,g)
-instance IsRecord (a,b,c,d,e,f,g,h) where
+instance Lazifiable ()
+instance Lazifiable (a,b)
+instance Lazifiable (a,b,c)
+instance Lazifiable (a,b,c,d)
+instance Lazifiable (a,b,c,d,e)
+instance Lazifiable (a,b,c,d,e,f)
+instance Lazifiable (a,b,c,d,e,f,g)
+instance Lazifiable (a,b,c,d,e,f,g,h) where
   lazify ~(a,b,c,d,e,f,g,h) = (a,b,c,d,e,f,g,h)
-instance IsRecord (a,b,c,d,e,f,g,h,i) where
+instance Lazifiable (a,b,c,d,e,f,g,h,i) where
   lazify ~(a,b,c,d,e,f,g,h,i) = (a,b,c,d,e,f,g,h,i)
-instance IsRecord (a,b,c,d,e,f,g,h,i,j) where
+instance Lazifiable (a,b,c,d,e,f,g,h,i,j) where
   lazify ~(a,b,c,d,e,f,g,h,i,j) = (a,b,c,d,e,f,g,h,i,j)
