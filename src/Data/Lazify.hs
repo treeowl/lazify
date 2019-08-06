@@ -64,7 +64,7 @@ class GLazifiable f where
 -- | Lazify a record using its generic representation.
 --
 -- Note that newtypes are treated specially: a newtype is lazified
--- by lazifying its *underlying* type using its 'Lazifiable' instance.
+-- by lazifying its /underlying/ type using its 'Lazifiable' instance.
 genericLazify :: (Generic a, GLazifiable (Rep a)) => a -> a
 genericLazify = to . glazify . from
 
