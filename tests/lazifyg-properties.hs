@@ -1,3 +1,5 @@
+{-# OPTIONS_GHC -Wno-type-defaults #-}
+
 import Data.Lazify.Generic
 import Data.Monoid
 main = do

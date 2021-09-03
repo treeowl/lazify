@@ -1,0 +1,17 @@
+-- configuration for haskell-ci
+-- so we don't need to pass all via command line arguments
+
+-- build only master branch, or PRs to master branch
+branches: master
+
+local-ghc-options: -Wall
+
+error-missing-methods: all
+
+installed: +all -transformers
+
+ghc-head: True
+
+haddock: >= 8.2
+
+cabal-check: True
